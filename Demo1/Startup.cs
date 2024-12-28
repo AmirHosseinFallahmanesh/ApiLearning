@@ -1,7 +1,10 @@
+using Demo1.Infrastructure.SwaggerConfig;
 using Demo1.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -26,10 +29,30 @@ namespace Demo1
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<IEmployeeRepository, EmployeeRepository>();
-            services.AddSwaggerGen(c=>
+
+            services.AddApiVersioning(option =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo() { Title = "My Api", Version = "v1" });
+                option.DefaultApiVersion = new ApiVersion(1, 0);
+                option.ReportApiVersions = true;
+                option.ApiVersionReader = ApiVersionReader.Combine(new UrlSegmentApiVersionReader(),
+                                                new HeaderApiVersionReader("x-api-version"),
+                                                new MediaTypeApiVersionReader("x-api-version"));
             });
+
+            services.AddVersionedApiExplorer(c =>
+            {
+                c.GroupNameFormat = "'v'VVV";
+                c.SubstituteApiVersionInUrl = true;
+            });
+
+            services.AddSwaggerGen();
+            services.ConfigureOptions<ConfigureSwaggerOptions>();
+
+            //basic
+            //services.AddSwaggerGen(c=>
+            //{
+            //    c.SwaggerDoc("v1", new OpenApiInfo() { Title = "My Api", Version = "v1" });
+            //});
             services.AddControllersWithViews();
         }
 
@@ -48,11 +71,21 @@ namespace Demo1
             }
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+            //basic
+            //app.UseSwagger();
+            //app.UseSwaggerUI(c =>
+            //{
+            //    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Api V1");
+            //});
+
             app.UseSwagger();
-            app.UseSwaggerUI(c =>
+            app.UseSwaggerUI(opt =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Api V1");
+
+                opt.SwaggerEndpoint("/swagger/v1/swagger.json","v1");
+                opt.SwaggerEndpoint("/swagger/v2/swagger.json","v2");
             });
+
             app.UseRouting();
 
             app.UseAuthorization();
