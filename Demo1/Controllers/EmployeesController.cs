@@ -18,6 +18,8 @@ namespace Demo1.Controllers
         {
             this.employeeRepository = employeeRepository;
         }
+
+        [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             ApiResponse<IEnumerable<Employee>> response = new ApiResponse<IEnumerable<Employee>>();
