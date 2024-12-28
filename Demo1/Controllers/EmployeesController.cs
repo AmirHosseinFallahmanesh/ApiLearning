@@ -46,10 +46,72 @@ namespace Demo1.Controllers
 
 
         [HttpGet("{id}")]
-        public async Task<Employee> Get(int id)
+        public async Task<IActionResult> Get(int id)
         {
-            return await employeeRepository.GetEmployeeByIdAsync(id);
+            
+                ApiResponse<Employee> response = new ApiResponse<Employee>();
+
+                try
+                {
+                if (id==0)
+                {
+                    throw new ArgumentException("id not valid");
+                }
+                    response.Data = await employeeRepository.GetEmployeeByIdAsync(id);
+                    response.Code = 200;
+                    return Ok(response);
+
+                }
+                catch (ArgumentException ex)
+                {
+                ApiError apiError = new ApiError()
+                {
+                    Code = "4x",
+                    Message = ex.Message
+                };
+                response.Errors.Add(apiError);
+                return BadRequest(response);
+            }
+                catch (Exception ex)
+                {
+                    ApiError apiError = new ApiError()
+                    {
+                        Code = "5x",
+                        Message = ex.Message
+                    };
+                    response.Errors.Add(apiError);
+                    return NotFound(response);
+                }
+
+
+
+            }
+            
+     
+        [HttpPost]
+        public async Task<IActionResult>Post(Employee employee)
+        {
+            ApiResponse<int> response = new ApiResponse<int>();
+            try
+            {
+                response.Data = await employeeRepository.AddEmployeeAsync(employee);
+                response.Code = 201;
+                return Created($"api/employees/{response.Data}", response);
+            }
+            catch (Exception ex)
+            {
+
+                ApiError apiError = new ApiError()
+                {
+                    Code = "4x",
+                    Message = ex.Message
+                };
+                response.Errors.Add(apiError);
+                return BadRequest(response);
+            }
         }
+
+
 
     }
 }

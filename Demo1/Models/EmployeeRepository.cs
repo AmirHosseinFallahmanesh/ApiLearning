@@ -36,10 +36,12 @@ namespace Demo1.Models
            
         }
 
-        public async Task AddEmployeeAsync(Employee employee)
+        public async Task<int> AddEmployeeAsync(Employee employee)
         {
             await Task.Delay(100);
+            employee.Id = context.Count + 1;
             context.Add(employee);
+            return employee.Id;
         }
 
         public async Task UpdateEmployeeAsync(Employee employee)
